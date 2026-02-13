@@ -1,0 +1,283 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>IPA BLACK | PRO</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plist/dist/plist.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+    --red:#ff0000;
+    --bg:#000;
+    --card-bg: rgba(15,15,15,0.98);
+    --glass-shadow: 0 40px 80px rgba(0,0,0,0.8);
+}
+* { box-sizing:border-box; -webkit-font-smoothing:antialiased; font-family:-apple-system, sans-serif; }
+body { margin:0; display:flex; flex-direction:column; align-items:center; min-height:100vh; background:var(--bg); color:#fff; padding-bottom:50px; }
+
+.bg-overlay {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:url('logo.png') no-repeat center; background-size:60%;
+    opacity:0.08; z-index:-1; filter:grayscale(100%) blur(2px);
+}
+
+.glass-panel {
+    width:90%; max-width:420px; background:var(--card-bg);
+    border-radius:50px; padding:40px 25px; text-align:center;
+    border:1px solid rgba(255,255,255,0.05);
+    box-shadow: var(--glass-shadow);
+    margin-top:40px; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    transition:0.4s;
+}
+
+.logo-ring {
+    width:120px; height:120px; border-radius:50%;
+    border:2px solid rgba(255,0,0,0.3); margin:0 auto 25px; padding:5px;
+    display:flex; align-items:center; justify-content:center;
+}
+.logo-ring img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+
+h1 { font-size:28px; font-weight:900; margin:0; color:#fff; }
+.badge { color:var(--red); font-size:11px; font-weight:900; letter-spacing:4px; margin:8px 0 35px; display:block; }
+
+.pass-input {
+    background:#111; border:1px solid #222; color:#fff;
+    padding:18px; width:100%; border-radius:25px;
+    text-align:center; font-size:22px; margin-bottom:18px; outline:none;
+    -webkit-text-security: disc;
+}
+.pass-input:focus { border:1px solid var(--red); }
+
+.btn-main {
+    background:var(--red); color:#fff; border:none; padding:18px;
+    width:100%; border-radius:25px; font-weight:700; cursor:pointer;
+    transition:0.3s; font-size:16px;
+}
+.btn-main:hover { opacity:0.85; }
+
+.upload-card {
+    border:2px dashed rgba(255,255,255,0.05); border-radius:30px;
+    padding:50px 20px; cursor:pointer; background: rgba(255,255,255,0.01);
+    transition:0.3s; margin-bottom:20px;
+}
+.upload-card:hover { background: rgba(255,255,255,0.03); transform:scale(1.02); }
+
+.social-container { display:flex; gap:12px; justify-content:center; margin-top:20px; width:90%; max-width:420px; }
+.social-link {
+    flex:1; padding:14px; border-radius:22px; background: rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.06); color:#fff; text-decoration:none;
+    font-size:13px; font-weight:700; display:flex; align-items:center;
+    justify-content:center; gap:8px; transition:0.3s;
+}
+.social-link:hover { opacity:0.85; }
+
+#loader { display:none; margin-top:20px; }
+.progress-container { width:100%; height:5px; background:#111; border-radius:10px; overflow:hidden; margin-top:15px; }
+.progress-bar { width:0%; height:100%; background:var(--red); transition:0.5s ease; }
+
+#result-box { display:none; margin-top:25px; transition:0.3s; }
+
+#plist-box {
+    display:none; margin-top:15px;
+    background:#111; border:1px solid #222; border-radius:20px; padding:15px;
+    font-family: monospace; font-size:12px; color:#fff; overflow-x:auto;
+    position:relative;
+}
+
+#copy-btn, #download-btn {
+    position:absolute; top:10px; right:10px; background:var(--red);
+    border:none; color:#fff; padding:5px 10px; border-radius:10px; cursor:pointer;
+    font-size:11px; margin-left:5px;
+}
+#copy-btn:hover, #download-btn:hover { opacity:0.8; }
+
+#download-btn { right:70px; }
+
+.history-wrap { width:90%; max-width:420px; margin-top:25px; }
+.history-item {
+    background: rgba(20,20,20,0.6); border-radius:20px;
+    padding:14px; margin-bottom:8px; display:flex; justify-content:space-between;
+    align-items:center; border:1px solid rgba(255,255,255,0.02); transition:0.3s;
+}
+.history-item:hover { background: rgba(20,20,20,0.8); }
+
+</style>
+</head>
+<body>
+
+<div class="bg-overlay"></div>
+
+<div id="auth-screen" style="width:100%; max-width:420px;">
+    <div class="glass-panel">
+        <div class="logo-ring"><img src="logo.png" alt="Logo"></div>
+        <h1>IPA BLACK</h1>
+        <span class="badge">SECURE SYSTEM</span>
+        <input type="tel" id="pass-field" class="pass-input" placeholder="0000 0000" maxlength="8">
+        <button onclick="checkPass()" class="btn-main">دخول</button>
+    </div>
+</div>
+
+<div id="main-screen" style="display:none; width:100%; max-width:420px; flex-direction: column; align-items: center;">
+    <div class="glass-panel">
+        <div class="logo-ring"><img src="logo.png" alt="Logo"></div>
+        <h1>لوحة الرفع</h1>
+        <span class="badge">ULTRA INSTALLER</span>
+
+        <div id="drop-zone" class="upload-card" onclick="document.getElementById('file-input').click()">
+            <div style="font-size:40px; margin-bottom:10px;">📦</div>
+            <p style="color:#444; font-size:12px; font-weight:700;">اسحب ملف IPA هنا أو اضغط للرفع</p>
+            <input type="file" id="file-input" hidden accept=".ipa" onchange="processFile(this.files[0])">
+        </div>
+
+        <div id="loader">
+            <div class="progress-container"><div class="progress-bar" id="bar"></div></div>
+        </div>
+
+        <div id="result-box">
+            <div style="background:#080808; padding:20px; border-radius:25px; margin-bottom:15px; border:1px solid #111;">
+                <div id="app-name" style="font-weight:800; color:var(--red); font-size:18px;">App Name</div>
+            </div>
+            <a href="#" id="dl-btn" class="btn-main" style="display:block; text-decoration:none;">تثبيت فوري ⚡</a>
+
+            <!-- صندوق عرض plist -->
+            <div id="plist-box">
+                <button id="copy-btn" onclick="copyPlist()">نسخ</button>
+                <button id="download-btn" onclick="downloadPlist()">تحميل</button>
+                <pre id="plist-content"></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="social-container">
+        <a href="https://t.me/hl00ss" target="_blank" class="social-link">
+            <i class="fa-brands fa-telegram" style="color:#26A5E4;"></i> تلجرام
+        </a>
+        <a href="https://www.tiktok.com/@ipa.black" target="_blank" class="social-link">
+            <i class="fa-brands fa-tiktok"></i> تيك توك
+        </a>
+    </div>
+
+    <div class="history-wrap" id="history-container">
+        <div id="history-list"></div>
+    </div>
+</div>
+
+<script>
+function checkPass(){
+    const inputPass=document.getElementById('pass-field').value;
+    const correctPass="20062007";
+    if(inputPass===correctPass){
+        document.getElementById('auth-screen').style.display='none';
+        document.getElementById('main-screen').style.display='flex';
+        loadHistory();
+    } else { alert("خطأ: الرمز الذي أدخلته غير صحيح!"); document.getElementById('pass-field').value=''; }
+}
+document.getElementById("pass-field").addEventListener("keypress", function(event){
+    if(event.key==="Enter"){ checkPass(); }
+});
+
+// البحث الديناميكي عن ملف plist
+function findPlistFile(zip){
+    const files=Object.keys(zip.files);
+    for(let f of files){
+        if(f.endsWith("Info.plist") && f.includes(".app/")) return f;
+    }
+    return null;
+}
+
+async function processFile(file){
+    if(!file) return;
+    document.getElementById('drop-zone').style.display='none';
+    document.getElementById('loader').style.display='block';
+    const bar=document.getElementById('bar');
+
+    try{
+        bar.style.width="30%";
+        const zip=await JSZip.loadAsync(file);
+        const plistPath=findPlistFile(zip);
+        if(!plistPath) throw new Error("لم يتم العثور على Info.plist داخل IPA!");
+        const content=await zip.file(plistPath).async("string");
+        const info=plist.parse(content);
+        const name=info.CFBundleDisplayName || info.CFBundleName || "App";
+
+        bar.style.width="70%";
+        const formData=new FormData();
+        formData.append("file", file);
+        const res=await fetch("https://transfer.sh/"+file.name,{method:"POST", body:formData});
+        if(!res.ok) throw new Error("فشل رفع الملف");
+        const url=await res.text();
+
+        const manifest=`<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict><key>items</key><array><dict>
+<key>assets</key><array><dict><key>kind</key><string>software-package</string>
+<key>url</key><string>${url}</string></dict></array>
+<key>metadata</key><dict>
+<key>bundle-identifier</key><string>${info.CFBundleIdentifier}</string>
+<key>bundle-version</key><string>${info.CFBundleVersion||"1.0"}</string>
+<key>kind</key><string>software</string>
+<key>title</key><string>${name}</string>
+</dict></dict></array></dict></plist>`;
+
+        const link=`itms-services://?action=download-manifest&url=data:text/xml;base64,${btoa(unescape(encodeURIComponent(manifest)))}`;
+        saveHistory(name, link);
+
+        bar.style.width="100%";
+
+        setTimeout(()=>{
+            document.getElementById('loader').style.display='none';
+            document.getElementById('result-box').style.display='block';
+            document.getElementById('app-name').innerText=name;
+            document.getElementById('dl-btn').href=link;
+
+            const plistBox=document.getElementById('plist-box');
+            const plistContent=document.getElementById('plist-content');
+            plistContent.textContent=manifest;
+            plistBox.style.display='block';
+        },500);
+
+    } catch(e){ alert("حدث خطأ: "+e.message); location.reload(); }
+}
+
+function copyPlist(){
+    const plistContent=document.getElementById('plist-content').textContent;
+    navigator.clipboard.writeText(plistContent).then(()=>{ alert("تم نسخ plist!"); });
+}
+
+function downloadPlist(){
+    const plistContent=document.getElementById('plist-content').textContent;
+    const blob = new Blob([plistContent], {type: "text/xml"});
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "manifest.plist";
+    link.click();
+}
+
+function saveHistory(name, link){
+    let h=JSON.parse(localStorage.getItem('ipa_pro_v3')||"[]");
+    h.unshift({name, link});
+    localStorage.setItem('ipa_pro_v3', JSON.stringify(h.slice(0,3)));
+    loadHistory();
+}
+
+function loadHistory(){
+    const list=document.getElementById('history-list');
+    const h=JSON.parse(localStorage.getItem('ipa_pro_v3')||"[]");
+    if(!h.length){ list.innerHTML=""; return; }
+    list.innerHTML="<span style='font-size:10px; color:#222; display:block; margin-bottom:8px;'>العمليات السابقة:</span>";
+    h.forEach(i=>{
+        list.innerHTML+=`<div class="history-item">
+        <span style="font-size:12px; font-weight:600;">${i.name}</span>
+        <a href="${i.link}" style="color:var(--red); text-decoration:none; font-size:11px; font-weight:bold; border:1px solid var(--red); padding:4px 10px; border-radius:10px;">تثبيت ⚡</a>
+        </div>`;
+    });
+}
+</script>
+
+</body>
+</html>
